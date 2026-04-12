@@ -1,0 +1,7 @@
+{
+    "noise_std": 0.0,
+    "mean_reward": 1.0,
+    "success_rate": 1.0,
+    "n_rollouts": 50,
+    "seed": 0
+}

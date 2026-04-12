@@ -1,0 +1,44 @@
+{
+    "results": [
+        {
+            "noise_std": 0.1,
+            "mean_reward": 0.94,
+            "success_rate": 0.94,
+            "n_rollouts": 50,
+            "seed": 0
+        },
+        {
+            "noise_std": 0.2,
+            "mean_reward": 0.66,
+            "success_rate": 0.66,
+            "n_rollouts": 50,
+            "seed": 0
+        },
+        {
+            "noise_std": 0.5,
+            "mean_reward": 0.1,
+            "success_rate": 0.1,
+            "n_rollouts": 50,
+            "seed": 0
+        },
+        {
+            "noise_std": 0.75,
+            "mean_reward": 0.06,
+            "success_rate": 0.06,
+            "n_rollouts": 50,
+            "seed": 0
+        }
+    ],
+    "config": {
+        "epoch": 600,
+        "n_rollouts": 50,
+        "horizon": 400,
+        "seed": 0,
+        "noise_levels": [
+            0.1,
+            0.2,
+            0.5,
+            0.75
+        ]
+    }
+}

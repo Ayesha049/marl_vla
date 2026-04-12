@@ -1,0 +1,12 @@
+VALIDATION LEVELS A + B SUMMARY
+============================================================
+
+LEVEL A: BC vs TD3-BC
+  BC Q-value:       +0.18815
+  Best TD3-BC Q:    +0.19065
+  Q improvement:    +0.00250
+
+LEVEL B: Best Checkpoint
+  Best step:        50000
+  Q ratio:          1.0011
+  Recommendation:   Use step 50000 weights for Step 3 and beyond

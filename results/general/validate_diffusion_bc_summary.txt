@@ -1,0 +1,14 @@
+DIFFUSION BC vs MLP BC
+============================================================
+
+MLP-BC:
+  Mean reward:    0.0000 ± 0.0000
+  Success rate:   0.0%
+  Mean sub-goals: 0.00/5
+
+Diffusion-BC:
+  Mean reward:    0.0000 ± 0.0000
+  Success rate:   0.0%
+  Mean sub-goals: 0.00/5
+
+Improvement: +0.0%

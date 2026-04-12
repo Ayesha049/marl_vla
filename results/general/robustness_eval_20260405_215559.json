@@ -1,0 +1,68 @@
+{
+    "results": [
+        {
+            "noise_std": 0.0,
+            "mean_reward": 0.98,
+            "success_rate": 0.98,
+            "n_rollouts": 50,
+            "seed": 0
+        },
+        {
+            "noise_std": 0.05,
+            "mean_reward": 0.94,
+            "success_rate": 0.94,
+            "n_rollouts": 50,
+            "seed": 0
+        },
+        {
+            "noise_std": 0.1,
+            "mean_reward": 0.84,
+            "success_rate": 0.84,
+            "n_rollouts": 50,
+            "seed": 0
+        },
+        {
+            "noise_std": 0.2,
+            "mean_reward": 0.3,
+            "success_rate": 0.3,
+            "n_rollouts": 50,
+            "seed": 0
+        },
+        {
+            "noise_std": 0.5,
+            "mean_reward": 0.02,
+            "success_rate": 0.02,
+            "n_rollouts": 50,
+            "seed": 0
+        },
+        {
+            "noise_std": 0.75,
+            "mean_reward": 0.0,
+            "success_rate": 0.0,
+            "n_rollouts": 50,
+            "seed": 0
+        },
+        {
+            "noise_std": 1.0,
+            "mean_reward": 0.0,
+            "success_rate": 0.0,
+            "n_rollouts": 50,
+            "seed": 0
+        }
+    ],
+    "config": {
+        "epoch": 600,
+        "n_rollouts": 50,
+        "horizon": 400,
+        "seed": 0,
+        "noise_levels": [
+            0.0,
+            0.05,
+            0.1,
+            0.2,
+            0.5,
+            0.75,
+            1.0
+        ]
+    }
+}
