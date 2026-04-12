@@ -20,8 +20,8 @@ from datetime import datetime
 # =========================
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CHECKPOINT_DIR = os.path.join(PROJECT_ROOT, 'checkpoints/bc_rnn_can/bc_rnn_can')
-RESULTS_DIR = os.path.join(PROJECT_ROOT, 'results')
-VIDEO_DIR = os.path.join(RESULTS_DIR, "videos")
+RESULTS_DIR = os.path.join(PROJECT_ROOT, 'results', 'can')
+VIDEO_DIR = RESULTS_DIR
 
 os.makedirs(RESULTS_DIR, exist_ok=True)
 os.makedirs(VIDEO_DIR, exist_ok=True)

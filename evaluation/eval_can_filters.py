@@ -72,7 +72,7 @@ class KalmanFilter:
 # =========================
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CHECKPOINT_DIR = os.path.join(PROJECT_ROOT, 'checkpoints/bc_rnn_can/bc_rnn_can')
-RESULTS_DIR = os.path.join(PROJECT_ROOT, 'results')
+RESULTS_DIR = os.path.join(PROJECT_ROOT, 'results', 'can')
 
 os.makedirs(RESULTS_DIR, exist_ok=True)
 

@@ -6,7 +6,7 @@ import os
 def main():
     # Define the input file path
     PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    csv_file = os.path.join(PROJECT_ROOT, 'results', 'robustness_eval_square_20260412_010241.csv')
+    csv_file = os.path.join(PROJECT_ROOT, 'results', 'square', 'robustness_eval_square_20260412_010241.csv')
     
     if not os.path.exists(csv_file):
         print(f"Error: Could not find {csv_file}")
