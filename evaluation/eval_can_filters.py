@@ -22,6 +22,182 @@ from datetime import datetime
 import numpy as np
 from collections import deque
 
+
+# =========================
+# HYPERPARAMETER SWEEP CONFIG
+# =========================
+
+EMA_ALPHAS = [0.05, 0.1, 0.2, 0.4, 0.6, 0.8]
+MEDIAN_KS = [3, 5, 7, 9]
+KALMAN_QS = [1e-5, 1e-4, 1e-3, 1e-2]
+KALMAN_RS = [1e-3, 1e-2, 1e-1]
+
+# =========================
+# FILTER FACTORY WITH PARAMS
+# =========================
+
+def create_filter_with_params(method, action_dim, params):
+    if method == "ema":
+        return EMAFilter(dim=action_dim, alpha=params["alpha"])
+    elif method == "median":
+        return MedianFilter(dim=action_dim, k=params["k"])
+    elif method == "kalman":
+        return KalmanFilter(
+            dim=action_dim,
+            Q=params["Q"],
+            R=params["R"]
+        )
+    else:
+        return None
+
+
+# =========================
+# GENERATE PARAM GRID
+# =========================
+
+def get_param_grid(method):
+    if method == "ema":
+        return [{"alpha": a} for a in EMA_ALPHAS]
+
+    elif method == "median":
+        return [{"k": k} for k in MEDIAN_KS]
+
+    elif method == "kalman":
+        return [
+            {"Q": Q, "R": R}
+            for Q in KALMAN_QS
+            for R in KALMAN_RS
+        ]
+
+    else:
+        return [{}]  # for "none"
+
+
+# =========================
+# EVALUATE ONE CONFIG
+# =========================
+
+def evaluate_config(policy, env, noise_std, method, params,
+                    action_dim, n_rollouts, horizon):
+
+    rewards = []
+    successes = []
+
+    for ep in range(n_rollouts):
+        filt = create_filter_with_params(method, action_dim, params)
+
+        ep_reward, success = run_single_rollout(
+            policy=policy,
+            env=env,
+            noise_std=noise_std,
+            filt=filt,
+            horizon=horizon
+        )
+
+        rewards.append(ep_reward)
+        successes.append(int(success))
+
+    return {
+        "mean_reward": float(np.mean(rewards)),
+        "success_rate": float(np.mean(successes))
+    }
+
+
+# =========================
+# MAIN SWEEP FUNCTION
+# =========================
+
+def run_hyperparameter_sweep(policy, env, noise_levels,
+                            action_dim, n_rollouts, horizon):
+
+    all_results = []
+
+    methods = ["none", "ema", "median", "kalman"]
+
+    for noise_std in noise_levels:
+        print(f"\n==============================")
+        print(f"🌪 Noise STD = {noise_std}")
+        print(f"==============================")
+
+        for method in methods:
+
+            print(f"\n🔧 Sweeping method: {method}")
+
+            param_grid = get_param_grid(method)
+
+            best_reward = -np.inf
+            best_result = None
+            best_params = None
+
+            for params in param_grid:
+
+                result = evaluate_config(
+                    policy,
+                    env,
+                    noise_std,
+                    method,
+                    params,
+                    action_dim,
+                    n_rollouts,
+                    horizon
+                )
+
+                print(f"Params: {params} → Reward: {result['mean_reward']:.4f}")
+
+                if result["mean_reward"] > best_reward:
+                    best_reward = result["mean_reward"]
+                    best_result = result
+                    best_params = params
+
+            # Save BEST config
+            record = {
+                "method": method + "(best)",
+                "noise_std": noise_std,
+                "mean_reward": best_result["mean_reward"],
+                "success_rate": best_result["success_rate"],
+                "n_rollouts": n_rollouts,
+                "seed": 0,
+                "best_params": best_params
+            }
+
+            print(f"✅ BEST {method}: {best_params} → {best_reward:.4f}")
+
+            all_results.append(record)
+
+    return all_results
+
+
+# =========================
+# SAVE RESULTS
+# =========================
+
+def save_sweep_results(results, filename="sweep_results.csv"):
+    with open(filename, "w", newline="") as f:
+        writer = csv.writer(f)
+
+        writer.writerow([
+            "method",
+            "noise_std",
+            "mean_reward",
+            "success_rate",
+            "n_rollouts",
+            "seed",
+            "best_params"
+        ])
+
+        for r in results:
+            writer.writerow([
+                r["method"],
+                r["noise_std"],
+                f"{r['mean_reward']:.4f}",
+                f"{r['success_rate']:.4f}",
+                r["n_rollouts"],
+                r["seed"],
+                str(r["best_params"])
+            ])
+
+    print(f"\n💾 Saved sweep results to {filename}")
+
 class EMAFilter:
     """Exponential Moving Average filter for action smoothing."""
     def __init__(self, dim, alpha=0.2):
@@ -405,7 +581,7 @@ def main():
     args = parse_arguments()
     
     # Define noise levels and filtering methods to test
-    noise_levels = [0.0, 0.1, 0.2, 0.5, 0.75]
+    noise_levels = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]
     methods = ["none", "kalman", "ema", "median"]
 
     # Setup environment
@@ -427,21 +603,20 @@ def main():
     action_dim = get_action_dimension(env, policy)
     print(f"🔍 Action dimension: {action_dim}")
 
-    # Run evaluation for all noise levels and methods
-    all_results = []
-    for noise_std in noise_levels:
-        for method in methods:
-            print(f"\n🔄 Testing noise_std = {noise_std}, method = {method}")
-            result = evaluate_noise_and_method(
-                policy, env, noise_std, method, action_dim, 
-                args.n_rollouts, args.horizon
-            )
-            all_results.append(result)
+    # Run hyperparameter sweep for all noise levels
+    all_results = run_hyperparameter_sweep(
+        policy,
+        env,
+        noise_levels,
+        action_dim,
+        args.n_rollouts,
+        args.horizon
+    )
 
     # Print summary
     print_results_summary(all_results)
 
-    # Save results
+    # Save sweep results
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     config = {
         "epoch": args.epoch,
@@ -449,11 +624,13 @@ def main():
         "horizon": args.horizon,
         "seed": args.seed,
         "noise_levels": noise_levels,
-        "methods": methods
+        "sweep": True
     }
+
+    save_sweep_results(all_results, filename=os.path.join(RESULTS_DIR, f"sweep_lift_{timestamp}.csv"))
     
     save_results_to_json(all_results, config, timestamp)
-    save_results_to_csv(all_results, timestamp)
+    # save_results_to_csv(all_results, timestamp)
 
     return 0
 

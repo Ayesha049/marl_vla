@@ -5,24 +5,40 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 
-def plot_data(csv_file, output_file=None, metric='success_rate', plot_diffusion_lines=False):
+def plot_data(csv_file, output_file=None, metric='success_rate', plot_diffusion_lines=False, filter_sweep_csv=None):
     if not os.path.exists(csv_file):
         print(f"Error: Could not find {csv_file}")
         return
 
     df = pd.read_csv(csv_file)
 
+    if filter_sweep_csv:
+        if not os.path.exists(filter_sweep_csv):
+            print(f"Error: Could not find {filter_sweep_csv}")
+            return
+        sweep_df = pd.read_csv(filter_sweep_csv)
+
+        # Keep diffusion rows from the base CSV and replace filter rows with best sweep results.
+        diffusion_df = df[df['method'].astype(str).str.contains('diffusion', na=False)].copy()
+        none_df = df[df['method'].astype(str) == 'none'].copy() if 'none' in df['method'].values else pd.DataFrame()
+
+        sweep_df = sweep_df[sweep_df['method'].astype(str).str.contains('best', na=False)]
+        sweep_df['method'] = sweep_df['method'].astype(str).str.replace(r'\(best\)', '', regex=True)
+        sweep_df = sweep_df[sweep_df['method'].isin(['ema', 'kalman', 'median'])]
+
+        df = pd.concat([diffusion_df, none_df, sweep_df], ignore_index=True)
+
     category_col = 'method'
     x_col = 'noise_std'
     y_col = metric
 
     if output_file is None:
-        output_file = csv_file.replace('.csv', f'_best_diffusion_{metric}.png')
+        output_file = csv_file.replace('.csv', f'_combined_{metric}.png')
 
     plt.figure(figsize=(10, 6))
 
     if category_col in df.columns:
-        diffusion_mask = df[category_col].astype(str).str.startswith('diffusion')
+        diffusion_mask = df[category_col].astype(str).str.contains('diffusion', na=False)
         if plot_diffusion_lines:
             plot_mask = slice(None)
         else:
@@ -75,6 +91,7 @@ def plot_data(csv_file, output_file=None, metric='success_rate', plot_diffusion_
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Plot robustness CSV and highlight the best diffusion configuration per noise std.')
     parser.add_argument('--csv', type=str, help='Path to the CSV file to plot')
+    parser.add_argument('--filters-csv', type=str, default=None, help='CSV file with sweep results for ema/kalman/median filters')
     parser.add_argument('--output', type=str, default=None, help='Output image path')
     parser.add_argument('--metric', type=str, default='success_rate', choices=['success_rate', 'mean_reward'], help='Metric to plot and use for best diffusion selection')
     parser.add_argument('--plot-diffusion-lines', action='store_true', help='Plot all individual diffusion lines in addition to the best diffusion line')
@@ -85,6 +102,12 @@ if __name__ == '__main__':
         csv_file = args.csv
     else:
         PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        csv_file = os.path.join(PROJECT_ROOT, 'results', 'lift', 'robustness_eval_lift_20260413_022101.csv')
+        csv_file = os.path.join(PROJECT_ROOT, 'results', 'lift', 'robustness_eval_lift_20260415_002137.csv')
 
-    plot_data(csv_file, output_file=args.output, metric=args.metric, plot_diffusion_lines=args.plot_diffusion_lines)
+    plot_data(
+        csv_file,
+        output_file=args.output,
+        metric=args.metric,
+        plot_diffusion_lines=args.plot_diffusion_lines,
+        filter_sweep_csv=args.filters_csv,
+    )

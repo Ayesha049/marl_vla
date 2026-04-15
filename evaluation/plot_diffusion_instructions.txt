@@ -1,0 +1,29 @@
+Plotting instructions for lift robustness CSV files
+
+1. Plot from a single CSV file only
+
+   cd /home/axs0940/marl_vla
+   python evaluation/plot_diffusion_robustness.py \
+     --csv results/lift/robustness_eval_lift_20260415_002137.csv \
+     --metric success_rate \
+     --output results/lift/robustness_eval_lift_single_success_rate.png
+
+   # or for mean reward:
+   python evaluation/plot_diffusion_robustness.py \
+     --csv results/lift/robustness_eval_lift_20260415_002137.csv \
+     --metric mean_reward \
+     --output results/lift/robustness_eval_lift_single_mean_reward.png
+
+2. Plot by combining diffusion from the base CSV and sweep filter values
+
+   python evaluation/plot_diffusion_robustness.py \
+     --csv results/lift/robustness_eval_lift_20260415_002137.csv \
+     --filters-csv results/lift/sweep_lift_20260415_024728.csv \
+     --metric success_rate \
+     --output results/lift/robustness_eval_lift_combined_success_rate.png
+
+3. Notes
+
+- `--filters-csv` is optional. If omitted, the script plots only the data from the single CSV file.
+- The combined mode keeps diffusion rows from the base CSV and replaces `ema`, `kalman`, and `median` with values from the sweep CSV.
+- Available metrics: `success_rate`, `mean_reward`
